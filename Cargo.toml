@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/ocos-capability",
+    "crates/ocos-identity",
+    "crates/ocos-session",
+    "crates/ocos-protocol",
+    "crates/ocos-fabric",
+    "crates/ocos-agent",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/AndrewHoang1995/open-compute-os"
+authors = ["Open Compute OS contributors"]
+
+[workspace.dependencies]
+anyhow = "1"
+base64 = "0.22"
+clap = { version = "4", features = ["derive"] }
+ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
+ocos-capability = { path = "crates/ocos-capability" }
+ocos-fabric = { path = "crates/ocos-fabric" }
+ocos-identity = { path = "crates/ocos-identity" }
+ocos-protocol = { path = "crates/ocos-protocol" }
+ocos-session = { path = "crates/ocos-session" }
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+tokio = { version = "1", features = ["io-util", "macros", "net", "rt-multi-thread", "time"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"

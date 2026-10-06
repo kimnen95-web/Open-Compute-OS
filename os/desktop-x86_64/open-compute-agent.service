@@ -1,0 +1,15 @@
+[Unit]
+Description=Open Compute OS agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ocos-agent serve --data-dir /var/lib/ocos --listen 0.0.0.0:9740
+Restart=on-failure
+User=ocos
+Group=ocos
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

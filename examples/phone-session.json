@@ -1,0 +1,15 @@
+{
+  "session_id": "ses_demo",
+  "owner_node_id": "replace-with-the-phone-node-id",
+  "mode": "mobile",
+  "windows": [
+    {
+      "app_id": "os.ocos.notes",
+      "title": "Notes — welcome",
+      "document_id": "welcome",
+      "cursor": 42,
+      "draft": "Written on the phone. Still here on the desktop.",
+      "bounds": null
+    }
+  ]
+}

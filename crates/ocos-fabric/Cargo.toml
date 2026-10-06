@@ -1,0 +1,15 @@
+[package]
+name = "ocos-fabric"
+description = "Places workloads on a single Open Compute OS node"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+ocos-capability.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,18 @@
+[package]
+name = "ocos-protocol"
+description = "Framed messages exchanged by Open Compute OS nodes"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+ocos-capability.workspace = true
+ocos-session.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true
