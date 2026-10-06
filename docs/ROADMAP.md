@@ -14,8 +14,8 @@
 ## Next
 
 - [ ] TLS on the agent connection, before any real user file is sent
-- [ ] USB CDC-NCM gadget on the Pixel image, brought up by the system, not by a tethering toggle
-- [ ] Package `ocos-agent` as a system service on `ocos-mobile-arm64` and as a systemd unit on `ocos-desktop-x86_64`
+- [ ] Halium Ubuntu root on Pixel 8 (`shiba`): Linux prompt, then USB NCM, then OCOS agent
+- [ ] Package `ocos-agent` as the same systemd unit on phone (`aarch64`) and desktop (`x86_64`)
 - [ ] Desktop shell that opens `session_offer` windows and sends keyboard and pointer back
 - [ ] One offload worker (video encode or a small inference job) that runs only after the fabric selects the desktop GPU
 - [ ] Declare the GTX 1070 from the desktop image without hand-editing JSON on every boot

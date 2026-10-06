@@ -36,14 +36,14 @@ User + Identity + Data + Apps + Sessions
 
 The first hardware pair is a **Pixel 8** and a **Ryzen desktop** (Ryzen 5 5600X, 16 GiB RAM, GTX 1070). They do not boot the same kernel. Tensor G3 and a Ryzen CPU cannot share one kernel image. They boot two images of one platform:
 
-Both machines run **Open Compute OS 0.1.0**. They do not share one kernel image. The bases below are the ones that actually boot this hardware. See [docs/BASES.md](docs/BASES.md).
+Both machines run **Open Compute OS 0.1.0**, which is a **Linux userspace**. They do not share one kernel. See [docs/BASES.md](docs/BASES.md).
 
-| Image | Machine | Base | Shared OCOS |
+| Image | Machine | Kernel | Userspace |
 | --- | --- | --- | --- |
-| `ocos-mobile-arm64` | Pixel 8 (`shiba`) | AOSP `android-latest-release` | 0.1.0, protocol 1 |
-| `ocos-desktop-x86_64` | Ryzen PC | Ubuntu 24.04 LTS | 0.1.0, protocol 1 |
+| `ocos-mobile-arm64` | Pixel 8 (`shiba`) | Android kernel (Halium) | Ubuntu + OCOS |
+| `ocos-desktop-x86_64` | Ryzen PC | Ubuntu kernel | Ubuntu 24.04 + OCOS |
 
-Plug the phone into the PC over USB-C and the open work is handed to the desktop runtime. Unplug it and the latest state returns to the phone runtime.
+The phone is not Android after a successful flash. Apps are Linux packages, built twice (`aarch64` and `x86_64`) from one tree. USB-C hands the open session to the other node's own runtime.
 
 ## What plugging in does
 
@@ -74,7 +74,7 @@ An app that exists only as an Android package, with no x86 build, has nothing to
 5. Place a GPU workload on the desktop node alone, and reject a job that would fit only if RAM were pooled.
 6. Refuse a peer that speaks a different Open Compute OS version.
 
-The flashable Pixel image and the Ubuntu desktop image are specified in `os/` and are not built by `cargo test`. See [the roadmap](docs/ROADMAP.md).
+The flashable Pixel image is a Halium Ubuntu root on the Android kernel, not AOSP userspace. That port is specified in `os/mobile-shiba/` and is not produced by `cargo test`. See [the roadmap](docs/ROADMAP.md).
 
 ## Try the reference scenario
 

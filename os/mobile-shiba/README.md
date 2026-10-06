@@ -1,34 +1,30 @@
 # Pixel 8 image (`ocos-mobile-arm64`)
 
-Open Compute OS 0.1.0 for Pixel 8 (`shiba`). The base is AOSP `android-latest-release`, because that is the tree that boots this phone. The flashed system is Open Compute OS. See [docs/BASES.md](../../docs/BASES.md) and [ocos-release.json](ocos-release.json).
+Open Compute OS 0.1.0 for Pixel 8 (`shiba`). This is a **Linux phone image**, not an AOSP ROM with an extra service.
+
+The kernel remains Google's Android kernel, because that is what drives Tensor. Everything above it is Ubuntu: systemd, apt, the Open Compute OS shell, and `ocos-agent` as a systemd unit — the same layout as [the desktop image](../desktop-x86_64/README.md). The glue is Halium / libhybris. See [docs/BASES.md](../../docs/BASES.md) and [ocos-release.json](ocos-release.json).
 
 ## What the image contains
 
-- The AOSP userspace and the Pixel kernel and drivers, so the Tensor G3, display, modem, and USB controller work
-- `ocos-agent` as a system service that starts at boot
-- A USB gadget configuration that exposes CDC-NCM when a host is detected, without a tethering prompt
-- The mobile shell as the system UI
+- Android `boot` / `vendor` from a Pixel factory image (kernel + HALs)
+- Ubuntu rootfs (`system.img` / Halium root)
+- `ocos-agent` as `open-compute-agent.service`
+- USB CDC-NCM gadget started by the OS, not by an Android tethering dialog
+- Linux apps (Notes and the rest), not APKs
 
-The agent crate in this repository is the piece that can be developed without compiling AOSP. The image build is a packaging step: cross-compile `ocos-agent` for `aarch64-linux-android` (or for a Linux chroot on the device, if the image uses one) and install it into the system partition.
+## Bring-up (not done in this repository yet)
 
-## What is intentionally not in this folder
+1. Unlock `shiba`.
+2. Choose a Halium Android version that can bind this kernel.
+3. Build hybris and a minimal Ubuntu root that reaches a framebuffer or DRM display.
+4. Cross-compile `ocos-agent` for `aarch64-unknown-linux-gnu` (glibc, not Android NDK).
+5. Enable the same systemd unit the desktop uses.
+6. Flash and test USB NCM, then the session handshake with the Ryzen node.
 
-A full AOSP tree. Google's documented workstation for that build is 64 GiB of RAM and about 400 GiB of free disk. The agent itself builds on a normal 16 GiB machine. Keep the ROM build on a machine or a cloud builder that meets Google's requirements, then flash the result.
+A first boot that only gets a Linux prompt over USB is a valid milestone. Modem and camera are later.
 
-Flashing `shiba` requires an unlocked bootloader and wipes the phone. That is a property of Pixel images, not of the agent.
+## What this is not
 
-## Boot integration sketch
-
-The service should be equivalent to:
-
-```text
-service ocos-agent /system/bin/ocos-agent serve --data-dir /data/ocos
-    class main
-    user system
-    group system inet
-    disabled
-```
-
-Enable it from the USB state machine when the port is configured, or enable it at boot and let it wait. The pairing code has to be visible in the system UI the first time a desktop is attached. After the desktop's key is in `/data/ocos/trust.json`, attaching it goes straight to Desktop Mode.
-
-Do not ship this as a Magisk module or a Play Store app. Those can be used in private experiments. They are not the OS.
+- Stock Android plus `ocos-agent.apk`
+- GrapheneOS / LineageOS with a privileged service
+- Mainline Linux on Tensor (not available for Pixel 8)

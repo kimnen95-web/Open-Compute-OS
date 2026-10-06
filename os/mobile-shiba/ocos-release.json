@@ -4,7 +4,8 @@
   "image": "ocos-mobile-arm64",
   "device": "shiba",
   "base": {
-    "name": "AOSP",
-    "channel": "android-latest-release"
+    "name": "Ubuntu userspace on Halium",
+    "kernel": "Android kernel from Pixel factory image",
+    "userspace": "Ubuntu"
   }
 }

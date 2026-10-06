@@ -14,13 +14,13 @@ This document describes the 0.1 system and the two images around it. The crates 
               │                               │
      ocos-mobile-arm64                ocos-desktop-x86_64
      Pixel 8 / shiba                  Ryzen + GTX 1070
-     AOSP + system service            Linux + systemd service
-     USB gadget (device)              USB host
+     Android kernel + Halium          Ubuntu kernel
+     Ubuntu userspace + OCOS          Ubuntu 24.04 + OCOS
 ```
 
-The agent binary is built twice from the same crate: `aarch64` for the phone image and `x86_64` for the desktop image. The protocol does not change between them.
+The agent binary is built twice from the same crate: `aarch64-unknown-linux-gnu` for the phone (Ubuntu/glibc, not the Android NDK) and `x86_64-unknown-linux-gnu` for the desktop. The protocol does not change between them.
 
-Building the phone *image* means compiling AOSP for `shiba` and installing the agent into it. That build is large. Building the *agent* is not. See [os/mobile-shiba/README.md](../os/mobile-shiba/README.md).
+Building the phone *image* means a Halium port: Android kernel plus an Ubuntu root. That work is large and device-specific. Building the *agent* is not. See [os/mobile-shiba/README.md](../os/mobile-shiba/README.md).
 
 ## Crates
 
