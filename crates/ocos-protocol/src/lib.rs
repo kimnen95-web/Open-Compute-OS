@@ -12,6 +12,8 @@ use serde::{Deserialize, Serialize};
 
 /// Protocol version spoken by this crate.
 pub const PROTOCOL_VERSION: u32 = 1;
+/// Release both images must share. Bump this when the on-wire session format changes.
+pub const OCOS_VERSION: &str = "0.1.0";
 /// Default TCP port for the agent.
 pub const DEFAULT_PORT: u16 = 9740;
 /// Largest accepted JSON body.
@@ -33,6 +35,7 @@ pub enum Message {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Hello {
     pub protocol_version: u32,
+    pub ocos_version: String,
     pub node_id: String,
     pub public_key: String,
     pub nonce: String,
@@ -45,6 +48,7 @@ impl Hello {
     pub fn signed_payload(&self) -> Result<Vec<u8>, ProtocolError> {
         let payload = HelloSigned {
             protocol_version: self.protocol_version,
+            ocos_version: &self.ocos_version,
             node_id: &self.node_id,
             public_key: &self.public_key,
             nonce: &self.nonce,
@@ -57,6 +61,7 @@ impl Hello {
 #[derive(Serialize)]
 struct HelloSigned<'a> {
     protocol_version: u32,
+    ocos_version: &'a str,
     node_id: &'a str,
     public_key: &'a str,
     nonce: &'a str,
@@ -85,7 +90,7 @@ pub struct SessionAccept {
     pub preserved: bool,
 }
 
-/// The desktop shell should show the phone's live windows.
+/// The desktop node opened its own copy of this session.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DesktopMode {
     pub active: bool,
@@ -174,6 +179,7 @@ mod tests {
     fn hello_frame_roundtrip_keeps_capability() {
         let hello = Hello {
             protocol_version: PROTOCOL_VERSION,
+            ocos_version: OCOS_VERSION.into(),
             node_id: "node_abc".into(),
             public_key: "pubkey".into(),
             nonce: "n".into(),
@@ -196,6 +202,7 @@ mod tests {
     fn signed_payload_omits_the_signature() {
         let hello = Hello {
             protocol_version: 1,
+            ocos_version: OCOS_VERSION.into(),
             node_id: "node_abc".into(),
             public_key: "pubkey".into(),
             nonce: "n".into(),

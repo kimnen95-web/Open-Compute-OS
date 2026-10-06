@@ -1,6 +1,8 @@
 {
   "session_id": "ses_demo",
   "owner_node_id": "replace-with-the-phone-node-id",
+  "runtime_node_id": "replace-with-the-phone-node-id",
+  "runtime_arch": "aarch64",
   "mode": "mobile",
   "windows": [
     {

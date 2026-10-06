@@ -36,7 +36,7 @@ ocos-agent
 | --- | --- |
 | `ocos-capability` | The JSON description of a node, plus a host probe |
 | `ocos-identity` | Ed25519 device key, pairing code, trust store |
-| `ocos-session` | Window snapshot and Mobile/Desktop presentation |
+| `ocos-session` | Window snapshot handed between the aarch64 and x86_64 app builds |
 | `ocos-protocol` | Frames and message types |
 | `ocos-fabric` | Choose one node for a workload |
 | `ocos-agent` | CLI, TCP session, reference demo |
@@ -65,7 +65,7 @@ Desktop                         Phone
    │ ────────────────────────────► │
 ```
 
-After this exchange the desktop shell has the same window list the phone had, marked as Desktop presentation. The phone's copy stays in Mobile presentation until a shell, later, mirrors that. Unplugging is the reverse: the desktop drops the presentation and the phone keeps the processes.
+After this exchange the desktop has opened its own x86 build at the same documents and cursors. `runtime_node_id` is the desktop. Unplugging writes the latest snapshot back and the phone opens its aarch64 build again.
 
 A second connection between the same keys skips `Pair`.
 
@@ -77,11 +77,10 @@ If several nodes fit, an AC-powered node is preferred when the workload asks for
 
 ## What stays on the phone
 
-| Stays on the phone in 0.1 | May move to the desktop |
+| Stays with the user | Opens on the desktop runtime when connected |
 | --- | --- |
-| Application process | Window presentation |
-| Login and draft inside that process | Keyboard and pointer, once a shell exists |
-| Identity anchor | GPU and large-memory jobs |
+| Identity and the data the phone owns | The x86 build of each OCOS app in the session |
+| Draft, cursor, and document id | GPU and large-memory jobs |
 | Sensors, radios, battery | Extra storage, when a data layer exists |
 
 Pixel streaming of those windows, and a worker that actually runs `ffmpeg` or a model on the GTX 1070, are the next layers. The control plane already decides *that* the windows move and *which* node gets the job.

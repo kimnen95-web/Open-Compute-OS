@@ -1,6 +1,6 @@
 # Pixel 8 image (`ocos-mobile-arm64`)
 
-The phone build is an Android image for Pixel 8, codename `shiba`, with Open Compute OS inside it. It is not a sideloaded app on stock Android.
+Open Compute OS 0.1.0 for Pixel 8 (`shiba`). The base is AOSP `android-latest-release`, because that is the tree that boots this phone. The flashed system is Open Compute OS. See [docs/BASES.md](../../docs/BASES.md) and [ocos-release.json](ocos-release.json).
 
 ## What the image contains
 

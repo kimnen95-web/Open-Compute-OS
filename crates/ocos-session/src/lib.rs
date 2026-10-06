@@ -1,9 +1,9 @@
-//! Application sessions that stay alive when a desktop node is attached.
+//! Application sessions shared by the phone and desktop images.
 //!
-//! The snapshot describes windows that are already running on the identity
-//! node (the phone). Desktop Mode is a change of presentation: the same
-//! process, the same draft, the same cursor. Plugging in a cable does not
-//! relaunch the app and does not migrate an ARM process onto x86.
+//! Plugging in hands the open work to the desktop runtime. That runtime is the
+//! x86 build of the same app, opened at the same document and cursor. Unplugging
+//! hands the latest state back to the phone runtime. An ARM process is not
+//! moved onto the x86 CPU.
 
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +17,15 @@ pub enum UiMode {
     Desktop,
 }
 
+/// Which build of an Open Compute OS app is hosting the session.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum RuntimeArch {
+    #[serde(rename = "aarch64")]
+    Aarch64,
+    #[serde(rename = "x86_64")]
+    X86_64,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WindowBounds {
     pub x: i32,
@@ -25,7 +34,7 @@ pub struct WindowBounds {
     pub height: u32,
 }
 
-/// State of one open window. This is not a new process.
+/// State of one open window, independent of which CPU is running it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WindowState {
     pub app_id: String,
@@ -40,22 +49,29 @@ pub struct WindowState {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SessionSnapshot {
     pub session_id: String,
+    /// Node that owns the user's data. On the first hardware pair this is the phone.
     pub owner_node_id: String,
+    /// Node whose app runtime currently has the windows open.
+    pub runtime_node_id: String,
+    pub runtime_arch: RuntimeArch,
     pub mode: UiMode,
     pub windows: Vec<WindowState>,
 }
 
 impl SessionSnapshot {
     pub fn new(session_id: impl Into<String>, owner_node_id: impl Into<String>) -> Self {
+        let owner_node_id = owner_node_id.into();
         Self {
             session_id: session_id.into(),
-            owner_node_id: owner_node_id.into(),
+            runtime_node_id: owner_node_id.clone(),
+            runtime_arch: RuntimeArch::Aarch64,
+            owner_node_id,
             mode: UiMode::Mobile,
             windows: Vec::new(),
         }
     }
 
-    /// Open Notes inside the existing session. The process stays on the owner node.
+    /// Open Notes inside the existing session.
     pub fn open_notes(
         &mut self,
         document_id: impl Into<String>,
@@ -79,17 +95,21 @@ impl SessionSnapshot {
             .find(|window| window.app_id == NOTES_APP_ID)
     }
 
-    /// Same windows, drawn by the desktop shell.
-    pub fn present_on_desktop(&self) -> Self {
-        let mut next = self.clone();
-        next.mode = UiMode::Desktop;
-        next
+    /// Open this work in the desktop node's own app runtime.
+    pub fn open_on_desktop(&self, desktop_node_id: &str) -> Self {
+        self.open_on(desktop_node_id, RuntimeArch::X86_64, UiMode::Desktop)
     }
 
-    /// Same windows, drawn by the phone shell after the cable is removed.
-    pub fn present_on_mobile(&self) -> Self {
+    /// Return this work to the phone node's own app runtime.
+    pub fn resume_on_phone(&self, phone_node_id: &str) -> Self {
+        self.open_on(phone_node_id, RuntimeArch::Aarch64, UiMode::Mobile)
+    }
+
+    fn open_on(&self, node_id: &str, arch: RuntimeArch, mode: UiMode) -> Self {
         let mut next = self.clone();
-        next.mode = UiMode::Mobile;
+        next.runtime_node_id = node_id.to_string();
+        next.runtime_arch = arch;
+        next.mode = mode;
         next
     }
 }
@@ -102,21 +122,25 @@ mod tests {
     fn desktop_mode_keeps_the_draft_and_cursor() {
         let mut session = SessionSnapshot::new("ses_demo", "node_phone");
         session.open_notes("welcome", "half written", 12);
-        let desktop = session.present_on_desktop();
+        let desktop = session.open_on_desktop("node_desk");
         assert_eq!(desktop.mode, UiMode::Desktop);
+        assert_eq!(desktop.runtime_arch, RuntimeArch::X86_64);
+        assert_eq!(desktop.runtime_node_id, "node_desk");
+        assert_eq!(desktop.owner_node_id, "node_phone");
         assert_eq!(
             desktop.notes().unwrap().draft.as_deref(),
             Some("half written")
         );
         assert_eq!(desktop.notes().unwrap().cursor, Some(12));
-        assert_eq!(session.mode, UiMode::Mobile);
+        assert_eq!(session.runtime_arch, RuntimeArch::Aarch64);
 
-        let phone = desktop.present_on_mobile();
+        let phone = desktop.resume_on_phone("node_phone");
         assert_eq!(phone.mode, UiMode::Mobile);
+        assert_eq!(phone.runtime_arch, RuntimeArch::Aarch64);
+        assert_eq!(phone.runtime_node_id, "node_phone");
         assert_eq!(
             phone.notes().unwrap().draft.as_deref(),
             Some("half written")
         );
-        assert_eq!(phone.windows.len(), session.windows.len());
     }
 }

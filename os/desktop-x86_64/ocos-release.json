@@ -1,0 +1,9 @@
+{
+  "ocos_version": "0.1.0",
+  "protocol_version": 1,
+  "image": "ocos-desktop-x86_64",
+  "base": {
+    "name": "Ubuntu",
+    "version": "24.04 LTS"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "ocos_version": "0.1.0",
+  "protocol_version": 1,
+  "image": "ocos-mobile-arm64",
+  "device": "shiba",
+  "base": {
+    "name": "AOSP",
+    "channel": "android-latest-release"
+  }
+}

@@ -27,6 +27,7 @@ pub struct DemoReport {
     pub desktop_mode: bool,
     pub phone_ui_mode: UiMode,
     pub desktop_ui_mode: UiMode,
+    pub desktop_runtime_node_id: String,
     pub notes_draft: String,
     pub notes_cursor: u64,
     pub placement_node_id: String,
@@ -43,8 +44,8 @@ impl std::fmt::Display for DemoReport {
         writeln!(f, "  desktop mode: {}", self.desktop_mode)?;
         writeln!(
             f,
-            "  phone ui stays {:?}; desktop shows {:?}",
-            self.phone_ui_mode, self.desktop_ui_mode
+            "  phone runtime was {:?}; desktop runtime is {:?} on {}",
+            self.phone_ui_mode, self.desktop_ui_mode, self.desktop_runtime_node_id
         )?;
         writeln!(
             f,
@@ -137,6 +138,11 @@ pub async fn run_demo() -> Result<DemoReport> {
             .as_ref()
             .map(|session| session.mode)
             .unwrap_or(UiMode::Mobile),
+        desktop_runtime_node_id: client
+            .session
+            .as_ref()
+            .map(|session| session.runtime_node_id.clone())
+            .unwrap_or_default(),
         notes_draft: notes.draft.clone().unwrap_or_default(),
         notes_cursor: notes.cursor.unwrap_or(0),
         placement_node_id: placement.node_id,
@@ -179,6 +185,7 @@ mod tests {
         assert!(report.desktop_mode);
         assert_eq!(report.phone_ui_mode, UiMode::Mobile);
         assert_eq!(report.desktop_ui_mode, UiMode::Desktop);
+        assert_eq!(report.desktop_runtime_node_id, report.desktop_node_id);
         assert_eq!(report.notes_draft, DEMO_NOTES_DRAFT);
         assert_eq!(report.notes_cursor, 42);
         assert_eq!(report.placement_node_id, report.desktop_node_id);

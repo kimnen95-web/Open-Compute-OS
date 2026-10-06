@@ -1,6 +1,6 @@
 # Desktop image (`ocos-desktop-x86_64`)
 
-The desktop build is a Linux system for the Ryzen machine. Ubuntu 24.04 is the first base. The agent and the desktop shell are part of that system. The user installs the image once. Plugging in the phone does not install anything else.
+Open Compute OS 0.1.0 for the Ryzen machine. The base is Ubuntu 24.04 LTS, the same release number the phone image advertises in its hello. Plugging in the phone does not install anything else. See [docs/BASES.md](../../docs/BASES.md) and [ocos-release.json](ocos-release.json).
 
 ## First target
 

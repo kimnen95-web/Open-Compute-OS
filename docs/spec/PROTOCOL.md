@@ -41,6 +41,7 @@ Implementations in this repository live in `ocos-protocol`.
 {
   "kind": "hello",
   "protocol_version": 1,
+  "ocos_version": "0.1.0",
   "node_id": "node_<64 lowercase hex chars of the raw public key>",
   "public_key": "<standard base64 of the 32-byte Ed25519 public key>",
   "nonce": "<32 lowercase hex chars>",
@@ -54,7 +55,7 @@ Implementations in this repository live in `ocos-protocol`.
 The signature covers the UTF-8 JSON of the same fields **except** `kind` and `signature`, serialized from this struct field order:
 
 ```text
-protocol_version, node_id, public_key, nonce, capability
+protocol_version, ocos_version, node_id, public_key, nonce, capability
 ```
 
 `node_id` must be `node_` plus the hex encoding of the 32-byte public key. A hello that fails verification closes the connection. No session is offered.

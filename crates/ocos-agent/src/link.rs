@@ -100,7 +100,11 @@ pub async fn handle_incoming(
         if !mode.active || mode.session_id != session.session_id {
             bail!("desktop mode was not activated");
         }
+        if mode.display_node_id != peer_hello.node_id {
+            bail!("desktop mode names a different node than the peer");
+        }
         report.desktop_mode = true;
+        report.session = Some(session.open_on_desktop(&peer_hello.node_id));
     }
 
     Ok(report)
@@ -162,11 +166,14 @@ pub async fn connect_peer(
 
     if peer_hello.capability.is_identity_anchor() && capability.is_desktop_target() {
         let offer = expect_offer(recv(&mut read).await?)?;
-        let presented = offer.snapshot.present_on_desktop();
+        let opened = offer.snapshot.open_on_desktop(&capability.node_id);
+        let body = serde_json::to_vec_pretty(&opened)?;
+        std::fs::write(node.paths.session(), body)
+            .with_context(|| format!("store session in {}", node.paths.session().display()))?;
         send(
             &mut write,
             &Message::SessionAccept(SessionAccept {
-                session_id: presented.session_id.clone(),
+                session_id: opened.session_id.clone(),
                 preserved: true,
             }),
         )
@@ -175,14 +182,14 @@ pub async fn connect_peer(
             &mut write,
             &Message::DesktopMode(DesktopMode {
                 active: true,
-                session_id: presented.session_id.clone(),
+                session_id: opened.session_id.clone(),
                 anchor_node_id: peer_hello.node_id.clone(),
                 display_node_id: capability.node_id.clone(),
             }),
         )
         .await?;
         report.desktop_mode = true;
-        report.session = Some(presented);
+        report.session = Some(opened);
     }
 
     Ok(report)

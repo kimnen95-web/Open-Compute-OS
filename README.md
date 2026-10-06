@@ -36,30 +36,32 @@ User + Identity + Data + Apps + Sessions
 
 The first hardware pair is a **Pixel 8** and a **Ryzen desktop** (Ryzen 5 5600X, 16 GiB RAM, GTX 1070). They do not boot the same kernel. Tensor G3 and a Ryzen CPU cannot share one kernel image. They boot two images of one platform:
 
-| Image | Machine | What it is |
-| --- | --- | --- |
-| `ocos-mobile-arm64` | Pixel 8 (`shiba`) | AOSP base plus this agent as a system service |
-| `ocos-desktop-x86_64` | Ryzen PC | A Linux system plus the same agent and a desktop shell |
+Both machines run **Open Compute OS 0.1.0**. They do not share one kernel image. The bases below are the ones that actually boot this hardware. See [docs/BASES.md](docs/BASES.md).
 
-Plug the phone into the PC over USB-C and the environment enters **Desktop Mode**. Unplug it and the same apps continue on the phone.
+| Image | Machine | Base | Shared OCOS |
+| --- | --- | --- | --- |
+| `ocos-mobile-arm64` | Pixel 8 (`shiba`) | AOSP `android-latest-release` | 0.1.0, protocol 1 |
+| `ocos-desktop-x86_64` | Ryzen PC | Ubuntu 24.04 LTS | 0.1.0, protocol 1 |
+
+Plug the phone into the PC over USB-C and the open work is handed to the desktop runtime. Unplug it and the latest state returns to the phone runtime.
 
 ## What plugging in does
 
-Apps that are already open **keep running on the phone**. Desktop Mode changes where the windows are shown and where keyboard and pointer input go. It does not restart the app, and it does not move an ARM process onto x86.
+An Open Compute OS app is built twice from one project: `aarch64` on the Pixel image and `x86_64` on the Ubuntu image. Connecting synchronizes identity and the open session. The desktop opens **its** build at the same document and cursor. Disconnecting writes that state back and the phone opens **its** build again.
 
 ```text
-Notes, still the same process on the Pixel
+Notes on Pixel (aarch64 runtime)
         │
-        │  USB-C
+        │  USB-C, same OCOS 0.1.0
         ▼
-Window on the desktop monitor
+Notes on Ryzen (x86_64 runtime), same draft and cursor
         │
-        │  unplug
+        │  unplug, state synced back
         ▼
-Same Notes draft, back on the phone
+Notes on Pixel again
 ```
 
-Heavy work is a separate decision. Video encoding, a large compile, or inference can be **offloaded** to the desktop node because that node has its own CPU, RAM, and GPU. The phone's 8 GiB and the desktop's 16 GiB are never added together. They are not one SMP machine.
+An app that exists only as an Android package, with no x86 build, has nothing to open on the desktop. Heavy work is a separate decision: video encoding, a large compile, or inference can run on the desktop CPU and GPU. The phone's 8 GiB and the desktop's 16 GiB are never added together.
 
 ## What 0.1 runs today
 
@@ -68,10 +70,11 @@ Heavy work is a separate decision. Video encoding, a large compile, or inference
 1. Create an Ed25519 device identity for a phone profile or a desktop profile.
 2. Exchange a signed hello and a one-time pairing code.
 3. Publish a capability descriptor (architecture, CPU, memory, GPU, power, roles).
-4. Hand a live session snapshot to the desktop node without dropping the Notes draft or cursor.
+4. Hand Notes to the desktop runtime without dropping the draft or cursor, and record that the x86 node is now hosting it.
 5. Place a GPU workload on the desktop node alone, and reject a job that would fit only if RAM were pooled.
+6. Refuse a peer that speaks a different Open Compute OS version.
 
-The Pixel image, the USB gadget, pixel streaming, and TLS on the wire are specified and not built yet. See [the roadmap](docs/ROADMAP.md). You can work on the agent without building AOSP.
+The flashable Pixel image and the Ubuntu desktop image are specified in `os/` and are not built by `cargo test`. See [the roadmap](docs/ROADMAP.md).
 
 ## Try the reference scenario
 

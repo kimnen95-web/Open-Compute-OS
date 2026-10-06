@@ -8,6 +8,7 @@ mod auth;
 mod config;
 mod demo;
 mod link;
+mod release;
 
 pub use config::{NodeConfig, NodePaths, RunningNode};
 pub use demo::{render_link, run_demo, DemoReport, DEMO_NOTES_DRAFT};

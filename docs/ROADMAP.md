@@ -6,7 +6,7 @@
 
 - [x] Capability descriptor, including the Pixel 8 and Ryzen reference nodes
 - [x] Ed25519 device identity, pairing code, trust store
-- [x] Session snapshot that survives Mobile → Desktop → Mobile presentation
+- [x] Session snapshot that opens on the desktop runtime and can return to the phone runtime
 - [x] Fabric that places work on one node and refuses pooled memory
 - [x] `ocos-agent` handshake over TCP
 - [x] Reference demo and tests

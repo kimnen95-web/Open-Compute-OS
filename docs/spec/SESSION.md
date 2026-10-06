@@ -2,7 +2,7 @@
 
 A session is the user's open work: which applications, which documents, where the cursor is, and what was not saved yet.
 
-Desktop Mode does not create a second session. It presents the same one.
+The phone image and the desktop image each have their own build of the app. Connecting hands the snapshot to the other build. The document and cursor stay. The CPU that runs the app changes.
 
 ## Snapshot
 
@@ -10,6 +10,8 @@ Desktop Mode does not create a second session. It presents the same one.
 {
   "session_id": "ses_demo",
   "owner_node_id": "node_…",
+  "runtime_node_id": "node_…",
+  "runtime_arch": "aarch64",
   "mode": "mobile",
   "windows": [
     {
@@ -27,8 +29,10 @@ Desktop Mode does not create a second session. It presents the same one.
 | Field | Meaning |
 | --- | --- |
 | `session_id` | Stable id for this piece of open work |
-| `owner_node_id` | Node whose processes these windows belong to |
-| `mode` | `mobile` or `desktop`. Presentation only |
+| `owner_node_id` | Node that owns the user data. The phone, on the first pair |
+| `runtime_node_id` | Node whose app build currently has the windows open |
+| `runtime_arch` | `aarch64` on the Pixel image, `x86_64` on the Ubuntu image |
+| `mode` | `mobile` or `desktop` |
 | `windows` | Open windows. Empty is a valid session |
 | `app_id` | Stable application id. Notes is `os.ocos.notes` |
 | `cursor` | Document offset the user had reached |
@@ -41,22 +45,24 @@ Desktop Mode does not create a second session. It presents the same one.
 
 When a desktop node receives `session_offer`:
 
-1. Keep every window in the snapshot.
-2. Show them in Desktop presentation.
-3. Reply `session_accept` with `preserved: true` and the same `session_id`.
-4. Send `desktop_mode` with `active: true`.
+1. Open the x86 build of each app in the snapshot.
+2. Restore every document, draft, and cursor.
+3. Set `runtime_node_id` to the desktop and `runtime_arch` to `x86_64`.
+4. Reply `session_accept` with `preserved: true` and the same `session_id`.
+5. Send `desktop_mode` with `active: true`.
 
 When the link drops:
 
-1. The owner node still has the processes.
-2. Its shell returns to Mobile presentation.
-3. The desktop shell drops the windows. It does not become a second owner of the draft.
+1. The desktop writes the latest snapshot back.
+2. The phone sets `runtime_node_id` to itself and `runtime_arch` to `aarch64`.
+3. The phone build opens that latest snapshot.
 
 ## What an implementation must not do
 
-- Relaunch the application on x86 and call that a handoff.
-- Require the user to sign in again because the monitor changed.
-- Move an arbitrary ARM process into the desktop kernel. That is live migration, and it is out of scope.
+- Treat a video stream of the phone screen as the handoff.
+- Require the user to sign in again because the runtime changed.
+- Move an ARM process into the desktop kernel. The desktop starts its own build.
+- Open an Android-only package that has no x86 build.
 - Put passwords or session cookies into `draft` while the channel is still plain TCP.
 
 ## Notes
